@@ -1,4 +1,5 @@
 import Brand from "../models/Brand.js";
+import { uploadToCloudinary } from "../config/firebase.js";
 
 const getBrands = async (req, res) => {
   try {
@@ -14,6 +15,18 @@ const addBrand = async (req, res) => {
   if (!name || !isActive || !logo) {
     return res.status(400).json({ error: "Please fill all the fields" });
   }
+  if(req?.file)
+    {
+      try{
+        const cloudinaryurl=await uploadToCloudinary(req.file.path);
+        console.log(cloudinaryurl.secure_url);
+      }
+      catch(err)
+      {
+        console.log(err);
+      }
+    }
+
   try {
     const brand = await Brand.create({
       name,
@@ -29,6 +42,18 @@ const addBrand = async (req, res) => {
 
 const updateBrand = async (req, res) => {
   const id = req.params.id;
+
+  if(req?.file)
+    {
+      try{
+        const cloudinaryurl=await uploadToCloudinary(req.file.path);
+        console.log(cloudinaryurl.secure_url);
+      }
+      catch(err)
+      {
+        console.log(err);
+      }
+    }
   if (!id) {
     return res.status(400).json({ error: "Please provide brand id" });
   }

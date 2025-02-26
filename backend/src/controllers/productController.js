@@ -1,5 +1,5 @@
+import { uploadToCloudinary } from "../config/firebase.js";
 import Product from "../models/Product.js";
-
 const getProducts = async (req, res) => {
   try {
     const products = await Product.find({}).populate("category brand");
@@ -27,6 +27,7 @@ const getsingleProduct = async (req, res) => {
 };
 
 const addProduct = async (req, res) => {
+  // console.log(req.body);
   const {
     name,
     image,
@@ -49,6 +50,18 @@ const addProduct = async (req, res) => {
     !dealExpiry
   ) {
     return res.status(400).json({ message: "All fields are required" });
+  }
+  // console.log(req.file);
+  if(req?.file)
+  {
+    try{
+      const cloudinaryurl=await uploadToCloudinary(req.file.path);
+      console.log(cloudinaryurl.secure_url);
+    }
+    catch(err)
+    {
+      console.log(err);
+    }
   }
   try {
     const product =await Product.create({
@@ -89,6 +102,19 @@ const updateProduct = async (req, res) => {
   if (!existingProduct) {
     return res.status(404).json({ message: "Product not found" });
   }
+
+  if(req?.file)
+    {
+      try{
+        const cloudinaryurl=await uploadToCloudinary(req.file.path);
+        console.log(cloudinaryurl.secure_url);
+      }
+      catch(err)
+      {
+        console.log(err);
+      }
+    }
+
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
