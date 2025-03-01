@@ -24,6 +24,25 @@ const uploadToCloudinary=async (filePath)=>{
     }
 }
 
+export const deleteFromCloudinary=async (public_id)=>{
+    try{
+        const result=await cloudinary.uploader.destroy(public_id);
+        console.log(result);
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+}
+
+export const getPublicId=(url)=>{
+    const parts=url.split("/");
+    const id= ((parts.slice(parts.indexOf("upload")+2)).join("/")).split('.')[0];
+    console.log(id);
+    return id;
+
+}
+
 const storage=multer.diskStorage({
     destination:(req,file,cb)=>{
         cb(null,'./uploads')

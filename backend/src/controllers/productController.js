@@ -1,5 +1,7 @@
 import { uploadToCloudinary } from "../config/firebase.js";
 import Product from "../models/Product.js";
+import { deleteFromCloudinary } from "../config/firebase.js";
+import { getPublicId } from "../config/firebase.js";
 const getProducts = async (req, res) => {
   try {
     const products = await Product.find({}).populate("category brand");
@@ -28,7 +30,7 @@ const getsingleProduct = async (req, res) => {
 
 const addProduct = async (req, res) => {
   // console.log(req.body);
-  const {
+  let {
     name,
     image,
     price,
@@ -56,6 +58,7 @@ const addProduct = async (req, res) => {
   {
     try{
       const cloudinaryurl=await uploadToCloudinary(req.file.path);
+      image=cloudinaryurl.secure_url;
       console.log(cloudinaryurl.secure_url);
     }
     catch(err)
@@ -84,7 +87,7 @@ const addProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   const id = req.params.id;
-  const {
+  let {
     name,
     image,
     price,
@@ -108,6 +111,21 @@ const updateProduct = async (req, res) => {
       try{
         const cloudinaryurl=await uploadToCloudinary(req.file.path);
         console.log(cloudinaryurl.secure_url);
+        if(existingProduct.image)
+        {
+          try{
+            console.log("image",existingProduct.image);
+            const public_id=getPublicId(existingProduct.image);
+            const result=await deleteFromCloudinary(public_id);
+            console.log(result);
+          }
+          catch(er)
+          {
+            console.log(er);
+          }
+        }
+        image=cloudinaryurl.secure_url;
+
       }
       catch(err)
       {
@@ -144,6 +162,23 @@ const deleteProduct = async (req, res) => {
   const id = req.params.id;
   if (!id) {
     return res.status(400).json({ message: "Product ID is required" });
+  }
+  const product=await Product.findById(id);
+  if(!product)
+  {
+    return res.status(200).json({ message: "Product does not exists" });
+  }
+  if(product.image)
+  {
+    try{
+      const public_id=getPublicId(product.image);
+      const result=await deleteFromCloudinary(public_id);
+      console.log(result);
+    }
+    catch(er)
+    {
+      console.log(er);
+    }
   }
   try {
     await Product.findByIdAndDelete(id);
